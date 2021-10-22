@@ -19,7 +19,8 @@ class TrieNode:
   def getChildNode(self, string):
     if len(string) > 1:
       try:
-        return self.getChildNode(self.childNodes[[ node.char for node in self.childNodes ].index(string[:1])], string[1:])
+        newNode = self.childNodes[[ node.char for node in self.childNodes ].index(string[0])]
+        return newNode.getChildNode(string[1:])
       except:
         return self
 
@@ -95,6 +96,8 @@ def searchWord(currentNode, rowIdx, columnIdx, usedGrid, wordString, words):
   # print("currentNode", currentNode.char, currentNode.isEndOfWord)
   # print("currentNode children", [node.char for node in currentNode.childNodes])
   # usedGrid[rowIdx][columnIdx] = True
+
+  wordString = wordString + grid[rowIdx][columnIdx]
   
   if currentNode.isEndOfWord:
     words.add(wordString)
@@ -104,54 +107,55 @@ def searchWord(currentNode, rowIdx, columnIdx, usedGrid, wordString, words):
     character = grid[rowIdx - 1][columnIdx - 1]
     childNode = currentNode.getChildNode(character)
     if childNode != currentNode:
-      words.update(searchWord(childNode, rowIdx - 1, columnIdx - 1, usedGrid, wordString + character, words))
+      words.update(searchWord(childNode, rowIdx - 1, columnIdx - 1, usedGrid, wordString, words))
 
   if inBoundsAndNotVisited(rowIdx - 1, columnIdx, usedGrid): # Up
     character = grid[rowIdx - 1][columnIdx]
     childNode = currentNode.getChildNode(character)
     if childNode != currentNode:
-      words.update(searchWord(childNode, rowIdx - 1, columnIdx, usedGrid, wordString + character, words))
+      words.update(searchWord(childNode, rowIdx - 1, columnIdx, usedGrid, wordString, words))
 
   if inBoundsAndNotVisited(rowIdx - 1, columnIdx + 1, usedGrid): # Up and Right
     character = grid[rowIdx - 1][columnIdx + 1]
     childNode = currentNode.getChildNode(character)
     if childNode != currentNode:
-      words.update(searchWord(childNode, rowIdx - 1, columnIdx + 1, usedGrid, wordString + character, words))
+      words.update(searchWord(childNode, rowIdx - 1, columnIdx + 1, usedGrid, wordString, words))
 
   if inBoundsAndNotVisited(rowIdx, columnIdx - 1, usedGrid): # Left
     character = grid[rowIdx][columnIdx - 1]
     childNode = currentNode.getChildNode(character)
     if childNode != currentNode:
-      words.update(searchWord(childNode, rowIdx, columnIdx - 1, usedGrid, wordString + character, words))
+      words.update(searchWord(childNode, rowIdx, columnIdx - 1, usedGrid, wordString, words))
 
   if inBoundsAndNotVisited(rowIdx, columnIdx + 1, usedGrid): # Right
     character = grid[rowIdx][columnIdx + 1]
     childNode = currentNode.getChildNode(character)
     if childNode != currentNode:
-      words.update(searchWord(childNode, rowIdx, columnIdx + 1, usedGrid, wordString + character, words))
+      words.update(searchWord(childNode, rowIdx, columnIdx + 1, usedGrid, wordString, words))
 
   if inBoundsAndNotVisited(rowIdx + 1, columnIdx - 1, usedGrid): # Down and Left
     character = grid[rowIdx + 1][columnIdx - 1]
     childNode = currentNode.getChildNode(character)
     if childNode != currentNode:
-      words.update(searchWord(childNode, rowIdx + 1, columnIdx - 1, usedGrid, wordString + character, words))
+      words.update(searchWord(childNode, rowIdx + 1, columnIdx - 1, usedGrid, wordString, words))
 
   if inBoundsAndNotVisited(rowIdx + 1, columnIdx, usedGrid): # Down
     character = grid[rowIdx + 1][columnIdx]
     childNode = currentNode.getChildNode(character)
     if childNode != currentNode:
-      words.update(searchWord(childNode, rowIdx + 1, columnIdx, usedGrid, wordString + character, words))
+      words.update(searchWord(childNode, rowIdx + 1, columnIdx, usedGrid, wordString, words))
 
   if inBoundsAndNotVisited(rowIdx + 1, columnIdx + 1, usedGrid): # Down and Right
     character = grid[rowIdx + 1][columnIdx + 1]
     childNode = currentNode.getChildNode(character)
     if childNode != currentNode:
-      words.update(searchWord(childNode, rowIdx + 1, columnIdx + 1, usedGrid, wordString + character, words))
+      words.update(searchWord(childNode, rowIdx + 1, columnIdx + 1, usedGrid, wordString, words))
   return words
   
 # Get the grid
 for rowElement in gridRowElements:
   grid.append(getRowCharacters(rowElement))
+
 
 words = set()
 maxRows = len(grid)
@@ -162,7 +166,7 @@ def findWords():
     for columnIndex in range(maxColumns):
       wordString = ""
       usedGrid = [[False] * (maxColumns)] * (maxRows)
-      searchWord(trie.root.getChildNode(grid[rowIndex][columnIndex]), rowIndex, columnIndex, usedGrid, wordString + grid[rowIndex][columnIndex], words)
+      searchWord(trie.root.getChildNode(grid[rowIndex][columnIndex]), rowIndex, columnIndex, usedGrid, wordString, words)
 
 def inputWords():
   usedWords = set()
