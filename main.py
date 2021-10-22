@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 import string
 import time
+from threading import Thread
 
 
 class TrieNode:
@@ -49,7 +50,7 @@ class Trie:
 
 # Build Word Trie
 trie = Trie()
-file = open("./words.txt", "r")
+file = open("./words2.txt", "r")
 wordLines = file.read().splitlines()
 allowedChars = set(string.ascii_lowercase)
 
@@ -94,6 +95,7 @@ def searchWord(currentNode, rowIdx, columnIdx, usedGrid, wordString, words):
   # print("currentNode", currentNode.char, currentNode.isEndOfWord)
   # print("currentNode children", [node.char for node in currentNode.childNodes])
   # usedGrid[rowIdx][columnIdx] = True
+  
   if currentNode.isEndOfWord:
     words.add(wordString)
 
@@ -151,27 +153,42 @@ def searchWord(currentNode, rowIdx, columnIdx, usedGrid, wordString, words):
 for rowElement in gridRowElements:
   grid.append(getRowCharacters(rowElement))
 
+words = set()
 maxRows = len(grid)
 maxColumns = len(grid[0])
-words = set()
 
-for rowIndex in range(maxRows):
-  for columnIndex in range(maxColumns):
-    wordString = ""
-    usedGrid = [[False] * (maxColumns)] * (maxRows)
-    searchWord(trie.root.getChildNode(grid[rowIndex][columnIndex]), rowIndex, columnIndex, usedGrid, wordString + grid[rowIndex][columnIndex], words)
+def findWords():
+  for rowIndex in range(maxRows):
+    for columnIndex in range(maxColumns):
+      wordString = ""
+      usedGrid = [[False] * (maxColumns)] * (maxRows)
+      searchWord(trie.root.getChildNode(grid[rowIndex][columnIndex]), rowIndex, columnIndex, usedGrid, wordString + grid[rowIndex][columnIndex], words)
+
+def inputWords():
+  usedWords = set()
+  
+  while(True):
+    words.difference_update(usedWords)
+    wordList = list(words)
+    if len(wordList) > 0:
+      wordList.sort(reverse=True, key=len)
+      word = wordList[0]
+      usedWords.add(word)
+      # print(word)
+      inputElement.send_keys(word)
+      enterElement.click()
+      if inputElement.get_attribute("class") == "invalid":
+        inputElement.clear()
 
 
-printString = ""
+findWordsThread = Thread(target=findWords)
+inputWordsThread = Thread(target=inputWords)
+try:
+  findWordsThread.start()
+  inputWordsThread.start()
+except :
+  print("Failed to start thread workers")
+
+
 print(words)
-
 print(grid)
-
-
-for word in words:
-  inputElement.send_keys(word)
-  enterElement.click()
-  if inputElement.get_attribute("class") == "invalid":
-    inputElement.clear()
-
-while (EC.)
