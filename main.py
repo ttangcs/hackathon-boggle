@@ -40,15 +40,10 @@ class Trie:
 
   def insertWord(self, word):
     currentNode = self.root
-    for char in list(word.lower()):
+    for char in list(word):
       if not self._contains(currentNode.childNodes, char):
         currentNode.childNodes.append(TrieNode(char))
-        currentNode = currentNode.childNodes[-1]
-        # print(currentNode.char, "if")
-      else:
-        currentNode = getChildNode(currentNode, char)
-        # print(currentNode.char, "else")
-    # print()
+      currentNode = currentNode.childNodes[[ node.char for node in currentNode.childNodes].index(char)]
     currentNode.isEndOfWord = True
     
 
@@ -59,9 +54,15 @@ file = open("./words.txt", "r")
 wordLines = file.read().splitlines()
 allowedChars = set(string.ascii_lowercase)
 
+count = 0
+
 for word in wordLines:
   if len(word) >= 3 and set(word) <= allowedChars:
+    count += 1
+    # print (word)
     trie.insertWord(word)
+  # if count == 20:
+  #   break
 
 
 driver = webdriver.Chrome()
@@ -94,9 +95,10 @@ def inBoundsAndNotVisited(rowIdx, columnIdx, usedGrid):
 
 
 def searchWord(currentNode, rowIdx, columnIdx, usedGrid, wordString, words):
-  print(wordString)
-  if currentNode.char == "" and not currentNode.isRoot:
-    return words
+  # print(wordString)
+  # print("currentNode", currentNode.char, currentNode.isEndOfWord)
+  # print("currentNode children", [node.char for node in currentNode.childNodes])
+  # usedGrid[rowIdx][columnIdx] = True
   if currentNode.isEndOfWord:
     words.add(wordString)
 
@@ -109,17 +111,17 @@ def searchWord(currentNode, rowIdx, columnIdx, usedGrid, wordString, words):
   #   character = grid[rowIdx - 1][columnIdx]
   #   words.update(searchWord(getChildNode(currentNode, character), rowIdx - 1, columnIdx, usedGrid, wordString + character, words))
 
-  # if inBoundsAndNotVisited(rowIdx - 1, columnIdx + 1, usedGrid): # Up and Right
-  #   character = grid[rowIdx - 1][columnIdx + 1]
-  #   words.update(searchWord(getChildNode(currentNode, character), rowIdx - 1, columnIdx + 1, usedGrid, wordString + character, words))
+  if inBoundsAndNotVisited(rowIdx - 1, columnIdx + 1, usedGrid): # Up and Right
+    character = grid[rowIdx - 1][columnIdx + 1]
+    words.update(searchWord(getChildNode(currentNode, character), rowIdx - 1, columnIdx + 1, usedGrid, wordString + character, words))
 
   # if inBoundsAndNotVisited(rowIdx, columnIdx - 1, usedGrid): # Left
   #   character = grid[rowIdx][columnIdx - 1]
   #   words.update(searchWord(getChildNode(currentNode, character), rowIdx, columnIdx - 1, usedGrid, wordString + character, words))
 
-  # if inBoundsAndNotVisited(rowIdx, columnIdx + 1, usedGrid): # Right
-  #   character = grid[rowIdx][columnIdx + 1]
-  #   words.update(searchWord(getChildNode(currentNode, character), rowIdx, columnIdx + 1, usedGrid, wordString + character, words))
+  if inBoundsAndNotVisited(rowIdx, columnIdx + 1, usedGrid): # Right
+    character = grid[rowIdx][columnIdx + 1]
+    words.update(searchWord(getChildNode(currentNode, character), rowIdx, columnIdx + 1, usedGrid, wordString + character, words))
 
   # if inBoundsAndNotVisited(rowIdx + 1, columnIdx - 1, usedGrid): # Down and Left
   #   character = grid[rowIdx + 1][columnIdx - 1]
@@ -146,8 +148,19 @@ for rowIndex in range(maxRows):
   for columnIndex in range(maxColumns):
     wordString = ""
     usedGrid = [[False] * (maxColumns)] * (maxRows)
-    print(searchWord(trie.root, rowIndex, columnIndex, usedGrid, wordString + grid[rowIndex][columnIndex], words))
+    searchWord(trie.root, rowIndex, columnIndex, usedGrid, wordString + grid[rowIndex][columnIndex], words)
 
+
+def printTrie(node, string):
+  string = string + " * " + node.char + " * "
+  for childNode in node.childNodes:
+    string = string + childNode.char
+    string = printTrie(childNode, string)
+  string = string + " - "
+  return string
+
+printString = ""
+# print(printTrie(trie.root, printString))
 print(words)
 
 print(grid)
